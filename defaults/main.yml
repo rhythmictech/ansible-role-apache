@@ -1,0 +1,24 @@
+---
+
+# This will need to be increased substantially for forward-facing production applications
+apache_max_clients: 50
+
+apache_allow_keepalive: True
+
+apache_timeout: 300
+
+# Override this for REST/microservice APIs that use weird HTTP methods
+apache_allowed_methods:
+  - GET
+  - POST
+  - HEAD
+
+# etags almost always cause more trouble than they're worth, unless
+# you're hosting a large repository of filesystem content.
+apache_allow_etags: False
+
+apache_server_listen_port: 80
+
+# should be one of prefork, worker, or event
+# currently only used for apache 2.4
+apache_mpm_module: prefork

@@ -1,0 +1,172 @@
+# {{ ansible_managed }}
+
+# General Server Settings
+ServerRoot              "/etc/httpd"
+PidFile                 run/httpd.pid
+
+Listen                  {{ apache_server_listen_port }}
+
+User                    apache
+Group                   apache
+
+# Modules
+{% if ansible_distribution_major_version == '7' %}
+Include                 conf.modules.d/*.conf
+{% else %}
+LoadModule              authz_default_module modules/mod_authz_default.so
+LoadModule              authz_host_module modules/mod_authz_host.so
+LoadModule              auth_basic_module modules/mod_auth_basic.so
+LoadModule              authn_file_module modules/mod_authn_file.so
+LoadModule              log_config_module modules/mod_log_config.so
+LoadModule              mime_magic_module modules/mod_mime_magic.so
+LoadModule              mime_module modules/mod_mime.so
+LoadModule              env_module modules/mod_env.so
+LoadModule              actions_module modules/mod_actions.so
+LoadModule              alias_module modules/mod_alias.so
+LoadModule              rewrite_module modules/mod_rewrite.so
+LoadModule              status_module modules/mod_status.so
+LoadModule              headers_module modules/mod_headers.so
+LoadModule              dir_module modules/mod_dir.so
+LoadModule              setenvif_module modules/mod_setenvif.so
+{% endif %}
+
+
+# Performance / KeepAlives
+Timeout                 {{ apache_timeout }}
+{% if apache_allow_keepalive %}
+KeepAlive               On
+MaxKeepAliveRequests    30
+KeepAliveTimeout        5
+{% else %}
+## KEEPALIVES DISABLED FOR THIS SERVER
+{% endif %}
+
+<IfModule prefork.c>
+StartServers            25
+MinSpareServers         25
+MaxSpareServers         50
+ServerLimit             {{ apache_max_clients }}
+MaxClients              {{ apache_max_clients }}
+MaxRequestsPerChild     50
+</IfModule>
+
+{% if ansible_distribution_major_version == '7' %}
+<IfModule event.c>
+StartServers 2
+ServerLimit 16
+MinSpareThreads 75
+MaxSpareThreads 250
+ThreadsPerChild 25
+MaxRequestWorkers {{ apache_max_clients }}
+MaxConnectionsPerChild 10000
+</IfModule>
+{% endif %}
+
+HostnameLookups         Off
+UseCanonicalName        Off
+
+EnableSendfile on
+
+# Response Control
+AddDefaultCharset       UTF-8
+TypesConfig             /etc/mime.types
+{% if ansible_distribution_major_version != '7' %}
+DefaultType             text/plain
+{% endif %}
+MIMEMagicFile           conf/magic
+
+# Browser Compatibility Settings
+BrowserMatch            "Mozilla/2" nokeepalive
+BrowserMatch            "MSIE 4\.0b2;" nokeepalive downgrade-1.0 force-response-1.0
+BrowserMatch            "RealPlayer 4\.0" force-response-1.0
+BrowserMatch            "Java/1\.0" force-response-1.0
+BrowserMatch             "JDK/1\.0" force-response-1.0
+
+{% if not apache_allow_etags %}
+# Cache tweaking
+Header                  unset ETag
+FileETag                None
+{% endif %}
+
+# Security Settings
+ServerTokens            Prod
+ServerSignature         Off
+TraceEnable             Off
+
+<Directory />
+    Options FollowSymLinks
+    AllowOverride None
+    <LimitExcept {{ apache_allowed_methods | join(" ") }}>
+        Deny from all
+    </LimitExcept>
+</Directory>
+
+RewriteEngine           On
+RewriteCond             %{THE_REQUEST} !HTTP/(0\.9|1\.[01])$
+RewriteRule             .* - [F]
+
+# Address CVE-2011-3192
+SetEnvIf                Range (,.*?){5,} bad-range=1
+RequestHeader           unset Range env=bad-range
+AccessFileName          .htaccess
+<Files ~ "^\.ht">
+    Order allow,deny
+    Deny from all
+    Satisfy All
+</Files>
+
+# Server Status report - internal only (be careful not to allow NAT ranges)
+ExtendedStatus on
+
+<Location /server-status>
+    SetHandler server-status
+    Order Deny,Allow
+    Deny from all
+    Allow from 10.0.0.0/8
+    Allow from 70.184.247.66
+    Allow from 70.39.246.214
+    Allow from 70.39.246.66
+</Location>
+
+
+# Logging Defaults
+SetEnvIf                Request_URI "^/favicon.ico$" nolog
+LogFormat               "%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\"" combined
+LogFormat               "%{X-Forwarded-For}i %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\" %{X-Forwarded-Proto}i" combined-proxy
+
+LogFormat "{ \
+    \"clientip\": \"%h\", \
+    \"protocol\": \"%H\", \
+    \"method\": \"%m\", \
+    \"path\": \"%U\", \
+    \"message\": \"%r\", \
+    \"duration\": \"%D\", \
+    \"code\": \"%>s\", \
+    \"size\": \"%B\", \
+    \"referer\": \"%{Referer}i\", \
+    \"useragent\": \"%{User-agent}i\", \
+    \"tags\": [\"apache-access\"], \
+    \"vhost\": \"%v\", \
+    \"@timestamp\": \"%{{ "{" }}%Y-%m-%dT%H:%M:%S%z}t\" \
+  }" json
+
+LogFormat "{ \
+    \"clientip\": \"%{X-Forwarded-For}i\", \
+    \"protocol\": \"%{X-Forwarded-Proto}i\", \
+    \"method\": \"%m\", \
+    \"path\": \"%U\", \
+    \"message\": \"%r\", \
+    \"duration\": \"%D\", \
+    \"code\": \"%>s\", \
+    \"size\": \"%B\", \
+    \"referer\": \"%{Referer}i\", \
+    \"useragent\": \"%{User-agent}i\", \
+    \"tags\": [\"apache-access\", \"apache-proxy\"], \
+    \"vhost\": \"%v\", \
+    \"@timestamp\": \"%{{ "{" }}%Y-%m-%dT%H:%M:%S%z}t\" \
+  }" json-proxy
+
+
+NameVirtualHost *:{{ apache_server_listen_port }}
+
+Include conf.d/*.conf

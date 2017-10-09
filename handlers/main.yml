@@ -1,0 +1,7 @@
+---
+# handlers for httpd
+- name: reload httpd
+  service: name=httpd state=reloaded
+
+- name: restart httpd
+  service: name=httpd state=restarted

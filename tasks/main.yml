@@ -1,0 +1,32 @@
+---
+# tasks for apache
+- name: ensure apache packages are installed
+  yum: name={{ item }} state=present
+  with_items:
+    - httpd
+  tags: ['apache']
+
+- name: ensure the base httpd config is in place
+  template:
+    src: "etc.httpd.conf.httpd.conf.j2"
+    dest: "/etc/httpd/conf/httpd.conf"
+    owner: root
+    group: apache
+    mode: 0640
+  notify: reload httpd
+  tags: ['apache']
+
+- name: ensure the mpm config is in place
+  template:
+    src: "etc.httpd.conf.modules.d.00-mpm.conf.j2"
+    dest: "/etc/httpd/conf.modules.d/00-mpm.conf"
+    owner: root
+    group: root
+    mode: 0644
+  notify: restart httpd
+  when: ansible_distribution_major_version == '7'
+  tags: ['apache']
+
+- name: ensure httpd is running and enabled
+  service: name=httpd state=started enabled=true
+  tags: ['apache']
