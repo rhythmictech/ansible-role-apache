@@ -168,6 +168,8 @@ LogFormat "{ \
   }" json-proxy
 
 
+{% if ansible_distribution_major_version < '7' %}
 NameVirtualHost *:{{ apache_server_listen_port }}
+{% endif %}
 
 Include conf.d/*.conf

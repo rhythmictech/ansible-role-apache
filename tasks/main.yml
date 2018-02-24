@@ -36,6 +36,15 @@
     group: apache
     mode: 0640
   notify: restart collectd
+  when: apache_collectd_enable
+  tags: ['collectd', 'apache']
+
+- name: ensure the collectd httpd config is removed
+  file:
+    path: "/etc/collectd.d/apache.conf"
+    state: absent
+  notify: restart collectd
+  when: not apache_collectd_enable
   tags: ['collectd', 'apache']
 
 - name: ensure httpd is running and enabled
