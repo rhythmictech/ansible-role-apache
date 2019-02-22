@@ -28,3 +28,29 @@ apache_collectd_enable: true
 
 # This is usually the best choice, but it sometimes is necessary to override.
 apache_collectd_url: http://127.0.0.1/server-status?auto
+
+# The below dict can be used in other roles that place SSL-enabled virtualhosts
+#  for ease of configuring common SSL protocol/cipher combinations
+#  You would use it in your virtualhost directive like so:
+#
+#  SSLProtocol: {{ apache_default_tls_lists.med.sslprotocol }}
+#  SSLCipherSuite: {{ apache_default_tls_lists.med.sslciphersuite }}
+#
+# TLS levels derived from https://medium.com/@davetempleton/tls-configuration-cipher-suites-and-protocols-a01ee7005778
+# low is super-compatible but enables weaker ciphers to support IE8/XP. Should be avoided, particularly with SNI
+# med is conservative, widely compatible, and secure. meets BOD18-01
+# high is very secure and compatible with anything modern. should be used whenever possible
+# veryhigh prefers 256 bit ciphers and hashes, but will have a performance penalty for little security benefit
+apache_default_tls_lists:
+  low:
+    sslprotocol: '+ALL -sslv3 -sslv2'
+    sslciphersuite: 'EECDH+AES:DHE+AES:@STRENGTH:+AES256:kRSA+3DES'
+  med:
+    sslprotocol: '+ALL -sslv3 -sslv2 -TLSv1'
+    sslciphersuite: 'EECDH+AES:@STRENGTH:+AES256'
+  high:
+    sslprotocol: '+ALL -sslv3 -sslv2 -TLSv1 -TLSv1.1'
+    sslciphersuite: 'EECDH+AES:@STRENGTH:+AES256'
+  veryhigh:
+    sslprotocol: '+ALL -sslv3 -sslv2 -TLSv1 -TLSv1.1'
+    sslciphersuite: 'EECDH+AES:@STRENGTH'
