@@ -10,7 +10,7 @@
 
 # tasks for apache
 - name: ensure apache packages are installed
-  yum: name={{ item }} state=present
+  yum: name={{ item }} state=present lock_timeout=180
   with_items:
     - httpd
     - collectd-apache
