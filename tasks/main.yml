@@ -1,7 +1,7 @@
 ---
 # compat for amazon linux
 - set_fact: ansible_distribution_major_version=6
-  when: ansible_distribution == "Amazon" and ansible_distribution_major_version == "NA" 
+  when: ansible_distribution == "Amazon" and ansible_distribution_major_version == "NA"
   tags: ['apache']
 
 - set_fact: ansible_distribution_major_version=7
@@ -10,10 +10,12 @@
 
 # tasks for apache
 - name: ensure apache packages are installed
-  yum: name={{ item }} state=present lock_timeout=180
-  with_items:
-    - httpd
-    - collectd-apache
+  yum:
+    name:
+      - httpd
+      - collectd-apache
+    state: present
+    lock_timeout: 180
   tags: ['apache']
 
 - name: ensure the base httpd config is in place
@@ -35,6 +37,13 @@
     mode: 0644
   notify: restart httpd
   when: ansible_distribution_major_version == '7'
+  tags: ['apache']
+
+- name: ensure mod_autoindex is disabled
+  copy:
+    content: "# This file intentionally left blank"
+    dest: "/etc/httpd/conf.d/autoindex.conf"
+  notify: restart httpd
   tags: ['apache']
 
 - name: ensure the collectd httpd config is in place
