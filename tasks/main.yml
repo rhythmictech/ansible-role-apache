@@ -10,11 +10,12 @@
 
 # tasks for apache
 - name: ensure apache packages are installed
-  yum: name="{{ packages }}" state=present lock_timeout=180
-  vars:
-    packages:
+  yum:
+    name:
       - httpd
       - collectd-apache
+    state: present
+    lock_timeout: 180
   tags: ['apache']
 
 - name: ensure the base httpd config is in place
@@ -39,9 +40,9 @@
   tags: ['apache']
 
 - name: ensure mod_autoindex is disabled
-  file:
-    path: "/etc/httpd/conf.d/autoindex.conf"
-    state: absent
+  copy:
+    content: "# This file intentionally left blank"
+    dest: "/etc/httpd/conf.d/autoindex.conf"
   notify: restart httpd
   tags: ['apache']
 
