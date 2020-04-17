@@ -1,7 +1,7 @@
 ---
 # compat for amazon linux
 - set_fact: ansible_distribution_major_version=6
-  when: ansible_distribution == "Amazon" and ansible_distribution_major_version == "NA" 
+  when: ansible_distribution == "Amazon" and ansible_distribution_major_version == "NA"
   tags: ['apache']
 
 - set_fact: ansible_distribution_major_version=7
@@ -35,6 +35,13 @@
     mode: 0644
   notify: restart httpd
   when: ansible_distribution_major_version == '7'
+  tags: ['apache']
+
+- name: ensure mod_autoindex is disabled
+  file:
+    path: "/etc/httpd/conf.d/autoindex.conf"
+    state: absent
+  notify: restart httpd
   tags: ['apache']
 
 - name: ensure the collectd httpd config is in place
