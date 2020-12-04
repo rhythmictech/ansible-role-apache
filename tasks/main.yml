@@ -13,9 +13,17 @@
   yum:
     name:
       - httpd
+    state: present
+    lock_timeout: 180
+  tags: ['apache']
+
+- name: ensure apache packages are installed
+  yum:
+    name:
       - collectd-apache
     state: present
     lock_timeout: 180
+  when: ansible_distribution == "CentOS"
   tags: ['apache']
 
 - name: ensure the base httpd config is in place
