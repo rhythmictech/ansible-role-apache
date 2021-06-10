@@ -1,35 +1,37 @@
 ---
 # compat for amazon linux
-- set_fact: ansible_distribution_major_version=6
+- set_fact: ansible_distribution_major_version=1
   when: ansible_distribution == "Amazon" and ansible_distribution_major_version == "NA"
   tags: ['apache']
 
-- set_fact: ansible_distribution_major_version=7
-  when: ansible_distribution == "Amazon" and ansible_distribution_major_version == "2"
-  tags: ['apache']
+- name: Include OS and Version specific variables
+  include_vars: "{{ ansible_distribution }}-{{ ansible_distribution_major_version }}.yml"
+
+- name: Include Oracle Linux 7 specific pre-install tasks
+  include_tasks: preinstall-oracle.yml
+  when: ansible_distribution == "OracleLinux" and ansible_distribution_major_version == "7"
 
 # tasks for apache
 - name: ensure apache packages are installed
   yum:
-    name:
-      - httpd
+    name: "{{ apache_packages }}"
     state: present
     lock_timeout: 180
   tags: ['apache']
 
-- name: ensure apache packages are installed
+- name: ensure apache collectd packages are installed
   yum:
     name:
       - collectd-apache
     state: present
     lock_timeout: 180
-  when: ansible_distribution == "CentOS"
+  when: apache_collectd_enable
   tags: ['apache']
 
 - name: ensure the base httpd config is in place
   template:
-    src: "etc.httpd.conf.httpd.conf.j2"
-    dest: "/etc/httpd/conf/httpd.conf"
+    src: "{{ apache_httpd_conf_template }}"
+    dest: "{{ apache_httpd_conf_base }}/conf/httpd.conf"
     owner: root
     group: apache
     mode: 0640
@@ -39,18 +41,18 @@
 - name: ensure the mpm config is in place
   template:
     src: "etc.httpd.conf.modules.d.00-mpm.conf.j2"
-    dest: "/etc/httpd/conf.modules.d/00-mpm.conf"
+    dest: "{{ apache_httpd_conf_base }}/conf.modules.d/00-mpm.conf"
     owner: root
     group: root
     mode: 0644
   notify: restart httpd
-  when: ansible_distribution_major_version == '7'
+  when: ansible_distribution_major_version == "7" or ( ansible_distribution == 'Amazon' and ansible_distribution_major_version == "2" )
   tags: ['apache']
 
 - name: ensure mod_autoindex is disabled
   copy:
     content: "# This file intentionally left blank"
-    dest: "/etc/httpd/conf.d/autoindex.conf"
+    dest: "{{ apache_httpd_conf_base }}/conf.d/autoindex.conf"
   notify: restart httpd
   tags: ['apache']
 
@@ -64,13 +66,9 @@
   when: apache_collectd_enable
   tags: ['collectd', 'apache']
 
-- name: ensure the collectd httpd config is removed
-  file:
-    path: "/etc/collectd.d/apache.conf"
-    state: absent
-  when: not apache_collectd_enable
-  tags: ['collectd', 'apache']
-
 - name: ensure httpd is running and enabled
-  service: name=httpd state=started enabled=true
+  service: 
+    name: "{{ apache_httpd_service }}"
+    state: started
+    enabled: true
   tags: ['apache']

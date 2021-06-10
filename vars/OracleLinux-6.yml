@@ -1,0 +1,5 @@
+apache_httpd_conf_base: "/etc/httpd"
+apache_httpd_conf_template: "etc.httpd.conf.httpd.conf.j2"
+apache_httpd_service: httpd
+apache_packages: 
+  - httpd

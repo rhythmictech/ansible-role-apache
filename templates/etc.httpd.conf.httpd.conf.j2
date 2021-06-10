@@ -1,7 +1,7 @@
 # {{ ansible_managed }}
 
 # General Server Settings
-ServerRoot              "/etc/httpd"
+ServerRoot              "{{ apache_httpd_conf_base }}"
 PidFile                 run/httpd.pid
 
 Listen                  {{ apache_server_listen_port }}
@@ -10,7 +10,7 @@ User                    apache
 Group                   apache
 
 # Modules
-{% if ansible_distribution_major_version == '7' %}
+{% if ansible_distribution_major_version == '7' or ansible_distribution_major_version == '2' %}
 Include                 conf.modules.d/*.conf
 {% else %}
 LoadModule              authz_default_module modules/mod_authz_default.so
@@ -50,7 +50,7 @@ MaxClients              {{ apache_max_clients }}
 MaxRequestsPerChild     50
 </IfModule>
 
-{% if ansible_distribution_major_version == '7' %}
+{% if ansible_distribution_major_version == '7' or ansible_distribution_major_version == '2'  %}
 <IfModule event.c>
 StartServers 2
 ServerLimit 16
@@ -70,7 +70,7 @@ EnableSendfile on
 # Response Control
 AddDefaultCharset       UTF-8
 TypesConfig             /etc/mime.types
-{% if ansible_distribution_major_version != '7' %}
+{% if ansible_distribution_major_version != '7' and ansible_distribution_major_version != '2' %}
 DefaultType             text/plain
 {% endif %}
 MIMEMagicFile           conf/magic

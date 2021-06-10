@@ -1,7 +1,7 @@
 ---
 # handlers for httpd
 - name: reload httpd
-  service: name=httpd state=reloaded
+  service: name="{{ apache_httpd_service }}" state=reloaded
 
 - name: restart httpd
-  service: name=httpd state=restarted
+  service: name="{{ apache_httpd_service }}" state=restarted

@@ -1,0 +1,7 @@
+  - name: install Oracle EL7 SCL repo
+    yum:
+      name:
+        - scl-utils
+        - oracle-softwarecollection-release-el7
+      state: present
+    tags: ['apache']
