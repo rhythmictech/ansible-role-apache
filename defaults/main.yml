@@ -24,7 +24,7 @@ apache_server_listen_port: 80
 apache_mpm_module: prefork
 
 # Should we attempt to poll server-status and send results to collectd?
-apache_collectd_enable: true
+apache_collectd_enable: false
 
 # This is usually the best choice, but it sometimes is necessary to override.
 apache_collectd_url: http://127.0.0.1/server-status?auto
