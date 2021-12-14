@@ -122,11 +122,9 @@ ExtendedStatus on
     SetHandler server-status
     Order Deny,Allow
     Deny from all
-    Allow from 127.0.0.1
-    Allow from 10.0.0.0/8
-    Allow from 70.184.247.66
-    Allow from 70.39.246.214
-    Allow from 70.39.246.66
+{% for address in apache_allow_server_status_addresses %}
+    Allow from {{ address }}
+{% endfor %}
 </Location>
 
 
@@ -168,8 +166,8 @@ LogFormat "{ \
   }" json-proxy
 
 
-{% if ansible_distribution_major_version < '7' %}
+{% if ansible_distribution_major_version == '6' %}
 NameVirtualHost *:{{ apache_server_listen_port }}
 {% endif %}
 
-Include conf.d/*.conf
+IncludeOptional conf.d/*.conf

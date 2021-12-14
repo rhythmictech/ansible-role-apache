@@ -72,3 +72,13 @@
     state: started
     enabled: true
   tags: ['apache']
+
+- name: ensure the logrotate config is in place
+  template:
+    src: "etc.logrotate.d.httpd.j2"
+    dest: "/etc/logrotate.d/httpd"
+    owner: root
+    group: root
+    mode: 0640
+  when: apache_enable_logrotate
+  tags: ['logrotate', 'apache']
