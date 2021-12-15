@@ -1,0 +1,15 @@
+# {{ ansible_managed }}
+/var/log/httpd/*log {
+    missingok
+    notifempty
+    sharedscripts
+    delaycompress
+    {% if apache_logrotate_compress | default(false) %}
+    compress
+    {% endif %}
+    daily
+    rotate {{ apache_logrotate_days }}
+    postrotate
+        /sbin/service httpd reload > /dev/null 2>/dev/null || true
+    endscript
+}
