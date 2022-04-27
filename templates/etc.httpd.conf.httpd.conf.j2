@@ -118,7 +118,7 @@ AccessFileName          .htaccess
 
 # Server Status report - internal only (be careful not to allow NAT ranges)
 ExtendedStatus on
-    <VirtualHost *:{{ apache_server_status_listen_port }}>
+<VirtualHost *:{{ apache_server_status_listen_port }}>
     <Location /server-status>
         SetHandler server-status
         Order Deny,Allow
