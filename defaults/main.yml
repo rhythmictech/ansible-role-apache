@@ -22,6 +22,9 @@ apache_allow_etags: False
 
 apache_server_listen_port: 80
 
+# port for the server status page to listen
+apache_server_status_listen_port: 80
+
 # should be one of prefork, worker, or event
 # currently only used for apache 2.4
 apache_mpm_module: prefork

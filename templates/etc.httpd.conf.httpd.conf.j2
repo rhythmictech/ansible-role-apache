@@ -5,6 +5,7 @@ ServerRoot              "{{ apache_httpd_conf_base }}"
 PidFile                 run/httpd.pid
 
 Listen                  {{ apache_server_listen_port }}
+Listen                  {{ apache_server_status_listen_port }}
 
 User                    apache
 Group                   apache
@@ -117,15 +118,16 @@ AccessFileName          .htaccess
 
 # Server Status report - internal only (be careful not to allow NAT ranges)
 ExtendedStatus on
-
-<Location /server-status>
-    SetHandler server-status
-    Order Deny,Allow
-    Deny from all
-{% for address in apache_allow_server_status_addresses %}
-    Allow from {{ address }}
-{% endfor %}
-</Location>
+    <VirtualHost *:{{ apache_server_status_listen_port }}>
+    <Location /server-status>
+        SetHandler server-status
+        Order Deny,Allow
+        Deny from all
+    {% for address in apache_allow_server_status_addresses %}
+        Allow from {{ address }}
+    {% endfor %}
+    </Location>
+</VirtualHost>
 
 
 # Logging Defaults
