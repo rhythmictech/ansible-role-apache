@@ -10,6 +10,10 @@
     daily
     rotate {{ apache_logrotate_days }}
     postrotate
+{% if ansible_distribution_major_version in ['7','2','2023'] %}
+        /bin/systemctl reload httpd.service > /dev/null 2>/dev/null || true
+{% else %}
         /sbin/service httpd reload > /dev/null 2>/dev/null || true
+{% endif %}
     endscript
 }
