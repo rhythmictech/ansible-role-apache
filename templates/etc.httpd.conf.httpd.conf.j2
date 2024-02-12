@@ -10,7 +10,7 @@ User                    apache
 Group                   apache
 
 # Modules
-{% if ansible_distribution_major_version == '7' or ansible_distribution_major_version == '2' %}
+{% if ansible_distribution_major_version in ['7','2','2023'] %}
 Include                 conf.modules.d/*.conf
 {% else %}
 LoadModule              authz_default_module modules/mod_authz_default.so
