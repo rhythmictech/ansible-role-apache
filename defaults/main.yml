@@ -1,5 +1,8 @@
 ---
 
+#httpd service name
+apache_httpd_service: httpd
+
 # This will need to be increased substantially for forward-facing production applications
 apache_max_clients: 50
 
