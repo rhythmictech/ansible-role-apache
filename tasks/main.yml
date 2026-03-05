@@ -1,86 +1,86 @@
 ---
 # compat for amazon linux
-- set_fact: ansible_distribution_major_version=1
+- name: Set Amazon Linux 1 major version
+  ansible.builtin.set_fact:
+    ansible_distribution_major_version: "1"
   when: ansible_distribution == "Amazon" and ansible_distribution_major_version == "NA"
   tags: ['apache']
 
 - name: Include OS and Version specific variables
-  include_vars: "{{ ansible_distribution }}-{{ ansible_distribution_major_version }}.yml"
+  ansible.builtin.include_vars: "{{ ansible_distribution }}-{{ ansible_distribution_major_version }}.yml"
   tags: ['apache']
 
 - name: Include Oracle Linux 7 specific pre-install tasks
-  include_tasks: preinstall-oracle.yml
+  ansible.builtin.include_tasks: preinstall-oracle.yml
   when: ansible_distribution == "OracleLinux" and ansible_distribution_major_version == "7"
   tags: ['apache']
 
 # tasks for apache
-- name: ensure apache packages are installed
-  yum:
+- name: Ensure apache packages are installed
+  ansible.builtin.package:
     name: "{{ apache_packages }}"
     state: present
-    lock_timeout: 180
   tags: ['apache']
 
-- name: ensure apache collectd packages are installed
-  yum:
+- name: Ensure apache collectd packages are installed
+  ansible.builtin.package:
     name:
       - collectd-apache
     state: present
-    lock_timeout: 180
   when: apache_collectd_enable
   tags: ['apache']
 
-- name: ensure the base httpd config is in place
-  template:
+- name: Ensure the base httpd config is in place
+  ansible.builtin.template:
     src: "{{ apache_httpd_conf_template }}"
     dest: "{{ apache_httpd_conf_base }}/conf/httpd.conf"
     owner: root
     group: apache
-    mode: 0640
+    mode: "0640"
   notify: reload httpd
   tags: ['apache']
 
-- name: ensure the mpm config is in place
-  template:
+- name: Ensure the mpm config is in place
+  ansible.builtin.template:
     src: "etc.httpd.conf.modules.d.00-mpm.conf.j2"
     dest: "{{ apache_httpd_conf_base }}/conf.modules.d/00-mpm.conf"
     owner: root
     group: root
-    mode: 0644
+    mode: "0644"
   notify: restart httpd
-  when: ansible_distribution_major_version == "7" or ( ansible_distribution == 'Amazon' and ansible_distribution_major_version == "2" )
+  when: apache_modular_config
   tags: ['apache']
 
-- name: ensure mod_autoindex is disabled
-  copy:
+- name: Ensure mod_autoindex is disabled
+  ansible.builtin.copy:
     content: "# This file intentionally left blank"
     dest: "{{ apache_httpd_conf_base }}/conf.d/autoindex.conf"
   notify: restart httpd
   tags: ['apache']
 
-- name: ensure the collectd httpd config is in place
-  template:
+- name: Ensure the collectd httpd config is in place
+  ansible.builtin.template:
     src: "etc.collectd.d.apache.conf.j2"
     dest: "/etc/collectd.d/apache.conf"
     owner: root
     group: apache
-    mode: 0640
+    mode: "0640"
   when: apache_collectd_enable
   tags: ['collectd', 'apache']
 
-- name: ensure httpd is running and enabled
-  service: 
+- name: Ensure httpd is running and enabled
+  ansible.builtin.service:
     name: "{{ apache_httpd_service }}"
     state: started
     enabled: true
   tags: ['apache']
 
-- name: ensure the logrotate config is in place
-  template:
+- name: Ensure the logrotate config is in place
+  ansible.builtin.template:
     src: "etc.logrotate.d.httpd.j2"
     dest: "/etc/logrotate.d/httpd"
     owner: root
     group: root
-    mode: 0640
+    mode: "0640"
   when: apache_enable_logrotate
   tags: ['logrotate', 'apache']

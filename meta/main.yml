@@ -1,14 +1,27 @@
 ---
 
 galaxy_info:
-  author: Rhythmic Operations <opsteam@rhythmictech.com>
+  author: Rhythmic Open Source <opensource@rhythmictech.com>
   description: Ansible Role for Apache management
   company: Rhythmic Technologies, Inc.
   license: Proprietary
-  min_ansible_version: 2.0
+  min_ansible_version: 2.10
   platforms:
+    - name: Amazon
+      versions:
+        - "1"
+        - "2"
+        - "2023"
     - name: CentOS
       versions:
         - "6"
         - "7"
+    - name: OracleLinux
+      versions:
+        - "6"
+        - "7"
+    - name: AlmaLinux
+      versions:
+        - "9"
+        - "10"
 dependencies: []

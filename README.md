@@ -6,9 +6,15 @@ Ansible Role for Apache
 Requirements
 ------------
 
-This role require Ansible 2.0 or higher.
+This role requires Ansible 2.10 or higher.
 
-This role was designed for CentOS 6.x or CentOS 7.x
+Supported Platforms
+-------------------
+
+- AlmaLinux 9, 10
+- Amazon Linux 1, 2, 2023
+- CentOS 6, 7
+- Oracle Linux 6, 7
 
 Role Variables
 --------------
