@@ -1,7 +1,11 @@
 ---
 # handlers for httpd
 - name: reload httpd
-  service: name="{{ apache_httpd_service }}" state=reloaded
+  ansible.builtin.service:
+    name: "{{ apache_httpd_service }}"
+    state: reloaded
 
 - name: restart httpd
-  service: name="{{ apache_httpd_service }}" state=restarted
+  ansible.builtin.service:
+    name: "{{ apache_httpd_service }}"
+    state: restarted

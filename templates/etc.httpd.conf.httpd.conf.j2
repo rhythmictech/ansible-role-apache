@@ -10,7 +10,7 @@ User                    apache
 Group                   apache
 
 # Modules
-{% if ansible_distribution_major_version in ['7','2','2023'] %}
+{% if apache_modular_config %}
 Include                 conf.modules.d/*.conf
 {% else %}
 LoadModule              authz_default_module modules/mod_authz_default.so
@@ -41,24 +41,43 @@ KeepAliveTimeout        5
 ## KEEPALIVES DISABLED FOR THIS SERVER
 {% endif %}
 
-<IfModule prefork.c>
-StartServers            25
-MinSpareServers         25
-MaxSpareServers         50
-ServerLimit             {{ apache_max_clients }}
-MaxClients              {{ apache_max_clients }}
-MaxRequestsPerChild     50
+{% if apache_modular_config %}
+<IfModule mpm_prefork_module>
+    StartServers            25
+    MinSpareServers         25
+    MaxSpareServers         50
+    ServerLimit             {{ apache_max_clients }}
+    MaxRequestWorkers       {{ apache_max_clients }}
+    MaxConnectionsPerChild  50
 </IfModule>
 
-{% if ansible_distribution_major_version == '7' or ansible_distribution_major_version == '2'  %}
-<IfModule event.c>
-StartServers 2
-ServerLimit 16
-MinSpareThreads 75
-MaxSpareThreads 250
-ThreadsPerChild 25
-MaxRequestWorkers {{ apache_max_clients }}
-MaxConnectionsPerChild 10000
+<IfModule mpm_worker_module>
+    StartServers            2
+    ServerLimit             16
+    MinSpareThreads         75
+    MaxSpareThreads         250
+    ThreadsPerChild         25
+    MaxRequestWorkers       {{ apache_max_clients }}
+    MaxConnectionsPerChild  10000
+</IfModule>
+
+<IfModule mpm_event_module>
+    StartServers            2
+    ServerLimit             16
+    MinSpareThreads         75
+    MaxSpareThreads         250
+    ThreadsPerChild         25
+    MaxRequestWorkers       {{ apache_max_clients }}
+    MaxConnectionsPerChild  10000
+</IfModule>
+{% else %}
+<IfModule prefork.c>
+    StartServers            25
+    MinSpareServers         25
+    MaxSpareServers         50
+    ServerLimit             {{ apache_max_clients }}
+    MaxClients              {{ apache_max_clients }}
+    MaxRequestsPerChild     50
 </IfModule>
 {% endif %}
 
@@ -70,7 +89,7 @@ EnableSendfile on
 # Response Control
 AddDefaultCharset       UTF-8
 TypesConfig             /etc/mime.types
-{% if ansible_distribution_major_version != '7' and ansible_distribution_major_version != '2' %}
+{% if not apache_modular_config %}
 DefaultType             text/plain
 {% endif %}
 MIMEMagicFile           conf/magic
@@ -166,7 +185,7 @@ LogFormat "{ \
   }" json-proxy
 
 
-{% if ansible_distribution_major_version == '6' %}
+{% if not apache_modular_config %}
 NameVirtualHost *:{{ apache_server_listen_port }}
 {% endif %}
 
